@@ -10,8 +10,9 @@ import io.javalin.Javalin;
 public class Main {
     public static void main(String[] args) {
         // This creates a new Javalin web server instance.
-        Javalin app = Javalin.create()
-            .start(7070); // The server will listen for requests on port 7070
+        Javalin app = Javalin.create(config -> {
+            config.staticFiles.add("/public");
+        }).start(7070);
 
         System.out.println("Server has started on port 7070!");
 
