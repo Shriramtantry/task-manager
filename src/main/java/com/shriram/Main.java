@@ -2,6 +2,8 @@ package com.shriram;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.javalin.Javalin;
 
@@ -190,6 +192,38 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
                 ctx.status(500).result("Error fetching tasks.");
+            }
+        });
+
+        // This is our new endpoint for deleting a task.
+        // It listens for DELETE requests. Notice the {taskId} placeholder.
+        app.delete("/api/tasks/{taskId}", ctx -> {
+            // 1. Get the task ID from the path parameter.
+            int taskId = Integer.parseInt(ctx.pathParam("taskId"));
+
+            // 2. Write the SQL command to delete a task with a specific ID.
+            String sql = "DELETE FROM tasks WHERE id = ?";
+
+            // 3. Use a try-catch block for safety.
+            try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                // 4. Fill in the placeholder with the task ID.
+                ps.setInt(1, taskId);
+
+                // 5. Execute the command. executeUpdate() is used for INSERT, UPDATE, and DELETE.
+                int rowsAffected = ps.executeUpdate();
+
+                // 6. Check if a row was actually deleted.
+                if (rowsAffected > 0) {
+                    ctx.status(200).result("Task deleted successfully.");
+                } else {
+                    ctx.status(404).result("Task not found."); // 404 means "Not Found"
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Error deleting task.");
             }
         });
     }
