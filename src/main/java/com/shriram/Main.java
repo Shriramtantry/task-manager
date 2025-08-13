@@ -148,5 +148,49 @@ public class Main {
                 ctx.result("Error creating task.");
             }
         });
+
+        // This is our new endpoint for getting all tasks for a specific user.
+        // It listens for GET requests. Notice the {userId} placeholder in the address.
+        app.get("/api/tasks/{userId}", ctx -> {
+            // 1. Get the user ID from the path parameter.
+            int userId = Integer.parseInt(ctx.pathParam("userId"));
+
+            // 2. Write the SQL command to find all tasks for a specific user.
+            String sql = "SELECT * FROM tasks WHERE user_id = ?";
+
+            // We need a list to hold all the tasks we find.
+            List<Task> tasks = new ArrayList<>();
+
+            // 3. Use a try-catch block for safety.
+            try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                // 4. Fill in the placeholder with the user ID from the path.
+                ps.setInt(1, userId);
+
+                // 5. Execute the query and get the results.
+                ResultSet rs = ps.executeQuery();
+
+                // 6. Loop through all the results found.
+                // The while(rs.next()) loop continues as long as there are more rows in the results.
+                while (rs.next()) {
+                    // For each row, create a new Task object.
+                    Task task = new Task();
+                    task.setTask_description(rs.getString("task_description"));
+                    task.setUser_id(rs.getInt("user_id"));
+                    // (We can add id and is_completed later if we need them)
+
+                    // Add the newly created task to our list.
+                    tasks.add(task);
+                }
+
+                // 7. Send the list of tasks back to the user as JSON data.
+                ctx.json(tasks);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Error fetching tasks.");
+            }
+        });
     }
 }
