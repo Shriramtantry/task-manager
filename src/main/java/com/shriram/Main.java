@@ -97,7 +97,15 @@ public class Main {
                     if (passwordFromDb.equals(submittedUser.getPassword())) {
                         // Passwords match! Login is successful.
                         ctx.status(200); // 200 means "OK"
-                        ctx.result("Login successful!");
+                        //ctx.result("Login successful!");
+                        // --- ADD THESE LINES ---
+                        // Create a new user object to send back.
+                        User loggedInUser = new User();
+                        loggedInUser.setId(rs.getInt("id")); // Get the ID from the database result.
+                        loggedInUser.setUsername(rs.getString("username"));
+
+// Send the user object as JSON.
+ctx.json(loggedInUser);
                     } else {
                         // Passwords do not match.
                         ctx.status(401); // 401 means "Unauthorized"
